@@ -430,7 +430,7 @@ Story.propTypes = {
 };
 
 Story.defaultProps = {
-  showInline: false,
+  showInline: true,
   showHeader: true,
   showSource: true,
   mtrcConf: {}

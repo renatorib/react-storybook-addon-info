@@ -244,8 +244,10 @@ export default class Story extends React.Component {
       }
     }
 
-    // extract components from children
-    extract(this.props.children);
+    if (!this.props.hasHOC) {
+      // extract components from children
+      extract(this.props.children);
+    }
 
     const array = Array.from(types.keys());
     array.sort(function (a, b) {
@@ -300,7 +302,7 @@ Story.propTypes = {
 };
 
 Story.defaultProps = {
-  showInline: false,
+  showInline: true,
   showHeader: true,
   showSource: true,
   mtrcConf: {}
