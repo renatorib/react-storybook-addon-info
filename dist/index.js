@@ -30,7 +30,7 @@ function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { de
 var Story = exports.Story = _Story3.default;
 
 var defaultOptions = {
-  inline: false,
+  inline: true,
   header: true,
   source: true,
   propTables: []
@@ -50,51 +50,73 @@ var defaultMtrcConf = {
   ul: _markdown.UL
 };
 
-exports.default = {
-  addWithInfo: function addWithInfo(storyName, info, storyFn, _options) {
-
-    if (typeof storyFn !== 'function') {
-      if (typeof info === 'function') {
-        _options = storyFn;
-        storyFn = info;
-        info = '';
-      } else {
-        throw new Error('No story defining function has been specified');
-      }
+function addWithInfo(storyName, info, storyFn, _options) {
+  if (typeof storyFn !== 'function') {
+    if (typeof info === 'function') {
+      _options = storyFn;
+      storyFn = info;
+      info = '';
+    } else {
+      throw new Error('No story defining function has been specified');
     }
-
-    var options = (0, _extends3.default)({}, defaultOptions, _options);
-
-    // props.propTables can only be either an array of components or null
-    // propTables option is allowed to be set to 'false' (a boolean)
-    // if the option is false, replace it with null to avoid react warnings
-    if (!options.propTables) {
-      options.propTables = null;
-    }
-
-    var mtrcConf = (0, _extends3.default)({}, defaultMtrcConf);
-    if (options && options.mtrcConf) {
-      (0, _assign2.default)(mtrcConf, options.mtrcConf);
-    }
-
-    this.add(storyName, function (context) {
-      var props = {
-        info: info,
-        context: context,
-        showInline: Boolean(options.inline),
-        showHeader: Boolean(options.header),
-        showSource: Boolean(options.source),
-        propTables: options.propTables,
-        mtrcConf: mtrcConf
-      };
-
-      return _react2.default.createElement(
-        Story,
-        props,
-        storyFn(context)
-      );
-    });
   }
+
+  var options = (0, _extends3.default)({}, defaultOptions, _options);
+
+  // props.propTables can only be either an array of components or null
+  // propTables option is allowed to be set to 'false' (a boolean)
+  // if the option is false, replace it with null to avoid react warnings
+  if (!options.propTables) {
+    options.propTables = null;
+  }
+
+  var mtrcConf = (0, _extends3.default)({}, defaultMtrcConf);
+  if (options && options.mtrcConf) {
+    (0, _assign2.default)(mtrcConf, options.mtrcConf);
+  }
+
+  this.add(storyName, function (context) {
+    var hasHOC = options.HOC != null;
+    var props = {
+      info: info,
+      context: context,
+      showInline: Boolean(options.inline),
+      showHeader: Boolean(options.header),
+      showSource: Boolean(options.source),
+      propTables: options.propTables,
+      hasHOC: hasHOC,
+      mtrcConf: mtrcConf
+    };
+
+    var storyContent = null;
+    if (hasHOC) {
+      var Component = options.HOC(storyFn);
+      Component.displayName = options.componentDislayName;
+      storyContent = _react2.default.createElement(Component, null);
+    } else {
+      storyContent = storyFn();
+    }
+
+    return _react2.default.createElement(
+      Story,
+      props,
+      storyContent
+    );
+  });
+}
+
+function addWithHOC(storyName, info, hoc, Component, storyFn) {
+  var options = {
+    propTables: [Component],
+    componentDislayName: Component.displayName,
+    HOC: hoc
+  };
+  this.addWithInfo(storyName, info, storyFn, options);
+}
+
+exports.default = {
+  addWithInfo: addWithInfo,
+  addWithHOC: addWithHOC
 };
 function setDefaults(newDefaults) {
   return (0, _assign2.default)(defaultOptions, newDefaults);

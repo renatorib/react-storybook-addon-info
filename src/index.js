@@ -4,7 +4,7 @@ import { H1, H2, H3, H4, H5, H6, Code, P, UL, A, LI } from './components/markdow
 export const Story = _Story;
 
 const defaultOptions = {
-  inline: false,
+  inline: true,
   header: true,
   source: true,
   propTables: [],
@@ -24,54 +24,76 @@ const defaultMtrcConf = {
   ul: UL,
 };
 
-export default {
-  addWithInfo(storyName, info, storyFn, _options) {
-
-    if (typeof storyFn !== 'function') {
-      if (typeof info === 'function') {
-        _options = storyFn;
-        storyFn = info;
-        info = '';
-      } else {
-        throw new Error('No story defining function has been specified');
-      }
+function addWithInfo(storyName, info, storyFn, _options) {
+  if (typeof storyFn !== 'function') {
+    if (typeof info === 'function') {
+      _options = storyFn;
+      storyFn = info;
+      info = '';
+    } else {
+      throw new Error('No story defining function has been specified');
     }
+  }
 
-    const options = {
-      ...defaultOptions,
-      ..._options
+  const options = {
+    ...defaultOptions,
+    ..._options
+  };
+
+  // props.propTables can only be either an array of components or null
+  // propTables option is allowed to be set to 'false' (a boolean)
+  // if the option is false, replace it with null to avoid react warnings
+  if (!options.propTables) {
+    options.propTables = null;
+  }
+
+  const mtrcConf = { ...defaultMtrcConf };
+  if (options && options.mtrcConf) {
+    Object.assign(mtrcConf, options.mtrcConf);
+  }
+
+  this.add(storyName, (context) => {
+    const hasHOC = options.HOC != null;
+    const props = {
+      info,
+      context,
+      showInline: Boolean(options.inline),
+      showHeader: Boolean(options.header),
+      showSource: Boolean(options.source),
+      propTables: options.propTables,
+      hasHOC,
+      mtrcConf
     };
 
-    // props.propTables can only be either an array of components or null
-    // propTables option is allowed to be set to 'false' (a boolean)
-    // if the option is false, replace it with null to avoid react warnings
-    if (!options.propTables) {
-      options.propTables = null;
+    let storyContent = null;
+    if (hasHOC) {
+      const Component = options.HOC(storyFn);
+      Component.displayName = options.componentDislayName;
+      storyContent = <Component />;
+    } else {
+      storyContent = storyFn();
     }
 
-    const mtrcConf = { ...defaultMtrcConf };
-    if (options && options.mtrcConf) {
-      Object.assign(mtrcConf, options.mtrcConf);
-    }
+    return (
+      <Story {...props}>
+        {storyContent}
+      </Story>
+    );
+  });
+}
 
-    this.add(storyName, (context) => {
-      const props = {
-        info,
-        context,
-        showInline: Boolean(options.inline),
-        showHeader: Boolean(options.header),
-        showSource: Boolean(options.source),
-        propTables: options.propTables,
-        mtrcConf
-      };
-
-      return (
-        <Story {...props}>
-          {storyFn(context)}
-        </Story>
-      );
-    });
+function addWithHOC(storyName, info, hoc, Component, storyFn) {
+  const options = {
+    propTables: [Component],
+    componentDislayName: Component.displayName,
+    HOC: hoc,
   }
+  this.addWithInfo(storyName, info, storyFn, options);
+}
+
+export default {
+  addWithInfo: addWithInfo,
+  addWithHOC: addWithHOC
 };
 
 export function setDefaults(newDefaults) {
