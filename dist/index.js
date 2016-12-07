@@ -75,9 +75,8 @@ function addWithInfo(storyName, info, storyFn, _options) {
     (0, _assign2.default)(mtrcConf, options.mtrcConf);
   }
 
-  console.log('options', options);
-
   this.add(storyName, function (context) {
+    var hasHOC = options.HOC != null;
     var props = {
       info: info,
       context: context,
@@ -85,23 +84,34 @@ function addWithInfo(storyName, info, storyFn, _options) {
       showHeader: Boolean(options.header),
       showSource: Boolean(options.source),
       propTables: options.propTables,
+      hasHOC: hasHOC,
       mtrcConf: mtrcConf
     };
+
+    var storyContent = null;
+    if (hasHOC) {
+      var Component = options.HOC(storyFn);
+      Component.displayName = options.componentDislayName;
+      storyContent = _react2.default.createElement(Component, null);
+    } else {
+      storyContent = storyFn();
+    }
 
     return _react2.default.createElement(
       Story,
       props,
-      storyFn()
+      storyContent
     );
   });
 }
 
-function addWithHOC(storyName, info, hoc, Component) {
-  var HOCComponent = hoc(Component);
-  var storyFn = function storyFn() {
-    return _react2.default.createElement(HOCComponent, null);
+function addWithHOC(storyName, info, hoc, Component, storyFn) {
+  var options = {
+    propTables: [Component],
+    componentDislayName: Component.displayName,
+    HOC: hoc
   };
-  addWithInfo(storyName, info, storyFn);
+  this.addWithInfo(storyName, info, storyFn, options);
 }
 
 exports.default = {

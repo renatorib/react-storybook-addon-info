@@ -361,8 +361,10 @@ var Story = function (_React$Component) {
         }
       }
 
-      // extract components from children
-      extract(this.props.children);
+      if (!this.props.hasHOC) {
+        // extract components from children
+        extract(this.props.children);
+      }
 
       var array = (0, _from2.default)(types.keys());
       array.sort(function (a, b) {

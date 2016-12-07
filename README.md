@@ -51,6 +51,28 @@ storiesOf('Button')
   );
 ```
 
+Then create your stories with the `.addWithHOC` API.
+
+```js
+import React from 'react';
+import TextField from './TextField';
+import withState from 'recompose/withState';
+import { storiesOf, action } from '@kadira/storybook';
+
+storiesOf('TextField')
+  .addWithInfo(
+    'simple usage',
+    `
+      This is the basic usage with the TextField
+    `,
+    withState('value', 'onChange', 'init value'),
+    TextField,
+    ({ value, onChange}) => (
+      <TextField value={value} onChange={onChange} />
+    )
+  );
+```
+
 > Have a look at [this example](example/story.js) stories to learn more about the `addWithInfo` API.
 
 ## Use with Docgen
