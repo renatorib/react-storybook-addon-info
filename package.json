@@ -1,5 +1,5 @@
 {
-  "name": "@thinkei/react-storybook-addon-info",
+  "name": "react-storybook-addon-info-docgen",
   "version": "1.1.0",
   "description": "A React Storybook addon to show additional information for your stories.",
   "repository": {
